@@ -59,8 +59,8 @@
                 placeholder="SEARCH"
               />
   
-              <div v-for="(result, index) in searchResults" :key="index">
-                {{ result }}
+              <div v-for="(result, index) in searchResults" :key="index" @click="searchItems" class="result-item" @mouseover="highlightResult(index)" @mouseleave="unhighlightResult(index)">
+                {{ result.suburb }}
               </div>
 
             </modal>
@@ -77,10 +77,14 @@
 <script>
 import { CollapseTransition } from "vue2-transitions";
 import Modal from "@/components/Modal";
+import axios from 'axios'
 
 export default {
   name: "NavBar",
   mounted() {
+    this.fetchItems();
+    this.fetchWeather();
+    console.log("allItem:", this.allItems)
     // Simulating fetching data or any logic to populate allItems
     this.$emit('update-items', this.responseData);
   },
@@ -97,21 +101,16 @@ export default {
       return this.$rtl.isRTL;
     },
   },
-  provide() {
-    return {
-      allItemsProvided: () => this.allItems,
-    };
-  },
   data() {
     return {
       activeNotifications: false,
       showMenu: false,
       searchModalVisible: false,
       searchQuery: "",
-      searchQuery: "",
       searchResults: [],  // to hold the filtered results
-      allItems: ['Alice', 'Bob', 'Charlie', 'David', 'EvA', 'Frank'], // this should be your array of items to search from
+      allItems: [], // this should be your array of items to search from
       responseData: 11,
+      currentLocation:[]
   };
 },
 
@@ -119,10 +118,6 @@ export default {
     searchQuery(newQuery) {
       this.filterResults(newQuery);
     },
-
-    allItems(newVal) {
-      this.$emit('update-items', newVal);
-    }
   },
 
 
@@ -145,36 +140,55 @@ export default {
     toggleMenu() {
       this.showMenu = !this.showMenu;
     },
+    highlightResult(index) {
+    this.$set(this.searchResults[index], 'hovered', true);
+    },
+    unhighlightResult(index) {
+    this.$set(this.searchResults[index], 'hovered', false);
+    },
+
     filterResults(query) {
       if (!query) {
         this.searchResults = [];
       } else {
         this.searchResults = this.allItems.filter((item) =>
-          item.toLowerCase().includes(query.toLowerCase())
+          item.suburb.toLowerCase().includes(query.toLowerCase())
         );
       }
     },
-    /* Send the user inputed surbub --> backend use API for the UV Index and return it to responseData
+    // Send the user inputed surbub --> backend use API for the UV Index and return it to responseData
     searchItems(){
-      /*
-      axios.get('/api/items/search', { params: { query: this.searchQuery } })
+      axios.get('http://localhost:8080/geo/search', { params: { suburb: this.searchQuery } })
       .then(response => {
-        this.responseData = response.data;
+        this.currentLocation = response.data;
+        console.log("currentLocation: ",this.currentLocation);
       })
       .catch(error => {
         console.error('There was an error fetching the items:', error);
       });
-    },*/
+    },
     /* This will be used to retrieve all the surburb name from the backend. */
     fetchItems() {
-      axios.get('/api/items')
+      axios.get('http://localhost:8080/geo')
         .then(response => {
           this.allItems = response.data;
+          console.log(response.data);
         })
         .catch(error => {
           console.error('There was an error fetching the items:', error);
         });
     },
+
+    fetchWeather() {
+      axios.get('https://api.openweathermap.org/data/2.5/onecall?lat=-35.28&lon=149.12&exclude=current&appid=b6c75eaf141a32191c638baa7ad4d720')
+        .then(response => {
+          this.allItems = response.data;
+          console.log("weather: ",response.data);
+        })
+        .catch(error => {
+          console.error('There was an error fetching the items:', error);
+        });
+    }
     
   },
 };
@@ -186,5 +200,10 @@ export default {
   position: absolute;
 
 }
+
+.result-item:hover {
+  cursor: pointer;
+}
+
 
 </style>
