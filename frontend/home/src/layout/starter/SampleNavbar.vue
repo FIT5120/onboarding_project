@@ -173,19 +173,36 @@ export default {
     this.searchResults = [];
     this.searchItems();
     },
-
+    /*
     searchItems() {
       axios.get(`http://localhost:8080/geo/search?suburb=${this.searchQuery}`)
         .then(response => {
           this.currentLocation = response.data;
           console.log("currentLocation: ", this.currentLocation.suburb);
-          this.fetchWeather(this.currentLocation.lat, this.currentLocation.lon);
-          this.$emit('update-items', { uvi: this.uvRating, location: this.currentLocation.suburb });
+          this.fetchWeather(this.currentLocation.lat, this.currentLocation.lon).then(() => {
+            this.$emit('update-items', { uvi: this.uvRating, location: this.currentLocation.suburb });
+      });
         })
         .catch(error => {
           console.error('There was an error fetching the items:', error);
         });
     },
+    */
+    searchItems() {
+  axios.get(`http://localhost:8080/geo/search?suburb=${this.searchQuery}`)
+    .then(response => {
+      this.currentLocation = response.data;
+      // Now we call fetchWeather and wait for it to complete.
+      return this.fetchWeather(this.currentLocation.lat, this.currentLocation.lon);
+    })
+    .then(() => {
+      // After fetchWeather completes, emit the update-items event.
+      this.$emit('update-items', { uvi: this.uvRating, location: this.currentLocation.suburb });
+    })
+    .catch(error => {
+      console.error('There was an error:', error);
+    });
+},
 
     /* This will be used to retrieve all the surburb name from the backend. */
     fetchItems() {
