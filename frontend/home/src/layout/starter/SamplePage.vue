@@ -1,6 +1,7 @@
+<!--SamplePage.vue-->
 <template>
   <div class="page-container">
-    <NavBar @update-items="updateItems"></NavBar>
+    <NavBar @update-items="updateItems" :uv-rating="uvRating"></NavBar>
     <div class="boxes">
       <div class="box box1">
         <div class="box-content">
@@ -34,6 +35,7 @@ export default {
   },
   methods: {
     updateItems(items) {
+      console.log("recieve uv rating: ",this.items)
       this.uvRating= items;
     }
   },
@@ -52,7 +54,7 @@ export default {
     },
 
     uvLevelMessage() {
-      if (this.uvRating >= 1 && this.uvRating <= 2) {
+      if (this.uvRating >= 0 && this.uvRating <= 2) {
         return "Low";
       } else if (this.uvRating >= 3 && this.uvRating <= 5) {
         return "Moderate";
@@ -66,7 +68,7 @@ export default {
       return "Invalid UV Rating"; // Default message
     },
     uvLevelColor() {
-    if (this.uvRating >= 1 && this.uvRating <= 2) {
+    if (this.uvRating >= 0 && this.uvRating <= 2) {
       return 'lightseagreen';
     } else if (this.uvRating >= 3 && this.uvRating <= 5) {
       return 'lightgreen';

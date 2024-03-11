@@ -1,3 +1,4 @@
+<!--SampleNavbar.vue-->
 <template>
   <nav
     class="navbar navbar-expand-lg navbar-absolute"
@@ -82,8 +83,8 @@ export default {
   mounted() {
     console.log("current location: ",this.currentLocation);
     this.fetchItems();
-    this.fetchWeather();
-    console.log("allLocations:", this.allLocations)
+    this.fetchWeather(this.currentLocation.lat,this.currentLocation.lon);
+    //console.log("allLocations:", this.allLocations)
     // Simulating fetching data or any logic to populate allLocations
     this.$emit('update-items', this.uvRating);
   },
@@ -115,7 +116,6 @@ export default {
         lat:-37.940,
         lon:145.100
       },
-      weatherData:[]
   };
 },
 
@@ -167,6 +167,7 @@ export default {
       .then(response => {
         this.currentLocation = response.data;
         console.log("currentLocation: ",this.currentLocation);
+        this.fetchWeather(this.currentLocation.lat,this.currentLocation.lon);
       })
       .catch(error => {
         console.error('There was an error fetching the items:', error);
@@ -184,15 +185,14 @@ export default {
         });
     },
 
-    fetchWeather() {
-      const {lat,lon} = this.currentLocation;
-      const apiKey = 'b6c75eaf141a32191c638baa7ad4d720';
-      const url = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=current&appid=${apiKey}`;
+    fetchWeather(lat, lon) {
+      const apiKey = '15cc9b4fa29b5c23c78cbde85c4ec55c';
+      const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${apiKey}`;
 
       axios.get(url)
         .then(response => {
-          this.weatherData = response.data;
-          console.log("weather: ",response.data);
+          this.uvRating = response.data.current.uvi;
+          console.log("weather: ",this.uvRating);
         })
         .catch(error => {
           console.error('There was an error fetching the items:', error);
