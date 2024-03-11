@@ -34,13 +34,12 @@
                 id="search-button"
                 data-toggle="modal"
                 data-target="#searchModal"
+                @click="searchModalVisible = true"
               >
                 <i class="tim-icons icon-zoom-split"></i>
               </button>
-
-
-            </div>
             
+            </div>
               <modal
               :show.sync="searchModalVisible"
               class="modal-search"
@@ -59,11 +58,12 @@
                 
                 placeholder="SEARCH"
               />
-  
-              <div v-for="(result, index) in searchResults" :key="index" @click="searchItems" class="result-item" @mouseover="highlightResult(index)" @mouseleave="unhighlightResult(index)">
-                {{ result.suburb }}
-              </div>
-
+              
+              <ul class="result-list">
+                <li v-for="(result, index) in filteredResults" :key="index" @click="selectResult(result)" class="result-item" @mouseover="highlightResult(index)" @mouseleave="unhighlightResult(index)">
+                  {{ result.suburb }}
+                </li>
+              </ul>
             </modal>
             
           </ul>
@@ -81,12 +81,11 @@ import axios from 'axios'
 export default {
   name: "NavBar",
   mounted() {
+    this.$emit('update-items', {uvi:this.uvRating,location:this.currentLocation.suburb});
     console.log("current location: ",this.currentLocation);
     this.fetchItems();
     this.fetchWeather(this.currentLocation.lat,this.currentLocation.lon);
-    //console.log("allLocations:", this.allLocations)
     // Simulating fetching data or any logic to populate allLocations
-    this.$emit('update-items', this.uvRating);
   },
   components: {
     CollapseTransition,
@@ -100,6 +99,12 @@ export default {
     isRTL() {
       return this.$rtl.isRTL;
     },
+    filteredResults() {
+      return this.searchResults.filter(result =>
+        result.suburb.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
+    },
+
   },
   data() {
     return {
@@ -109,7 +114,7 @@ export default {
       searchQuery: "",
       searchResults: [],  // to hold the filtered results
       allLocations: [], // this should be your array of items to search from
-      uvRating: 11,
+      uvRating: 0,
       currentLocation:{
         id:617,
         suburb:"Clayton",
@@ -157,28 +162,37 @@ export default {
         this.searchResults = [];
       } else {
         this.searchResults = this.allLocations.filter((item) =>
-          item.suburb.toLowerCase().includes(query.toLowerCase())
+          item.suburb.toLowerCase().startsWith(query.toLowerCase())
         );
       }
     },
-    // Send the user inputed surbub --> backend use API for the UV Index and return it to responseData
-    searchItems(){
-      axios.get(`http://localhost:8080/geo/search?suburb=${this.searchQuery}`)
-      .then(response => {
-        this.currentLocation = response.data;
-        console.log("currentLocation: ",this.currentLocation);
-        this.fetchWeather(this.currentLocation.lat,this.currentLocation.lon);
-      })
-      .catch(error => {
-        console.error('There was an error fetching the items:', error);
-      });
+
+    //Type keywords in the search bar and select the address
+    selectResult(result) {
+    this.searchQuery = result.suburb;
+    this.searchResults = [];
+    this.searchItems();
     },
+
+    searchItems() {
+      axios.get(`http://localhost:8080/geo/search?suburb=${this.searchQuery}`)
+        .then(response => {
+          this.currentLocation = response.data;
+          console.log("currentLocation: ", this.currentLocation.suburb);
+          this.fetchWeather(this.currentLocation.lat, this.currentLocation.lon);
+          this.$emit('update-items', { uvi: this.uvRating, location: this.currentLocation.suburb });
+        })
+        .catch(error => {
+          console.error('There was an error fetching the items:', error);
+        });
+    },
+
     /* This will be used to retrieve all the surburb name from the backend. */
     fetchItems() {
       axios.get('http://localhost:8080/geo')
         .then(response => {
           this.allLocations = response.data;
-          console.log(response.data);
+          //console.log(response.data);
         })
         .catch(error => {
           console.error('There was an error fetching the items:', error);
@@ -192,7 +206,7 @@ export default {
       axios.get(url)
         .then(response => {
           this.uvRating = response.data.current.uvi;
-          console.log("weather: ",this.uvRating);
+          console.log("uv index: ",this.uvRating);
         })
         .catch(error => {
           console.error('There was an error fetching the items:', error);
@@ -201,9 +215,8 @@ export default {
     
   },
 };
-
-
 </script>
+
 <style>
 .search-container {
   position: absolute;
@@ -214,5 +227,13 @@ export default {
   cursor: pointer;
 }
 
+.result-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.result-item {
+  color: black;
+}
 
 </style>

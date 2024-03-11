@@ -1,12 +1,12 @@
 <!--SamplePage.vue-->
 <template>
   <div class="page-container">
-    <NavBar @update-items="updateItems" :uv-rating="uvRating"></NavBar>
+    <NavBar @update-items="updateItems" ></NavBar>
     <div class="boxes">
       <div class="box box1">
         <div class="box-content">
           <p class= "uvnum">{{ uvRating }}</p>
-          
+          <p class="current-location">Current Location: {{ location }}</p>
         <p class="uvlevel-msg" :style="{ color: uvLevelColor }">{{ uvLevelMessage }}</p>
         </div>
 
@@ -31,17 +31,23 @@ export default {
   data() {
     return {
       uvRating: 0,
+      location: ""
     };
   },
   methods: {
     updateItems(items) {
-      console.log("recieve uv rating: ",this.items)
-      this.uvRating= items;
+      this.uvRating = items.uvi;
+      console.log("UV rating", this.uvRating);
+      this.location = items.location;
+      console.log("地点：", this.location);
     }
   },
   computed:{
     uvMessage() {
-      if (this.uvRating >= 1 && this.uvRating <= 2) {
+      if(this.uvRating == 0) {
+        return "You don't need any protection.";
+      }
+      else if (this.uvRating >= 0 && this.uvRating <= 2) {
         return "Wear sunglasses, sunscreen, a hat if you plan on staying out for a prolonged period.";
       } else if (this.uvRating >= 3 && this.uvRating <= 5) {
         return "Wear sunglasses, sunscreen, a hat, and protective clothing if you plan on staying out for a prolonged period.";
@@ -82,7 +88,10 @@ export default {
     return 'black'; // Default color
   }
   },
-  
+  mounted() {
+    // Subscribe to the update-items event from the NavBar component
+    this.$on('update-items', this.updateItems);
+  }
   
 };
 </script>
@@ -143,5 +152,14 @@ flex-direction: column; /* Stack children vertically */
   align-items: center;
   height: 100%;
   color: lightskyblue;
+}
+
+.current-location{
+  font-size: 20px; /* Set font size to 20px */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: rgb(255, 255, 255);
 }
 </style>
