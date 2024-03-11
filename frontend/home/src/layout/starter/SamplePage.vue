@@ -29,8 +29,7 @@ export default {
   },
   data() {
     return {
-      allItems: [],
-      uvRating: 7,
+      uvRating: 0,
     };
   },
   methods: {

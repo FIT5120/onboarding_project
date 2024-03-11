@@ -65,8 +65,6 @@
 
             </modal>
             
-
-
           </ul>
         </div>
 
@@ -82,11 +80,12 @@ import axios from 'axios'
 export default {
   name: "NavBar",
   mounted() {
+    console.log("current location: ",this.currentLocation);
     this.fetchItems();
     this.fetchWeather();
-    console.log("allItem:", this.allItems)
-    // Simulating fetching data or any logic to populate allItems
-    this.$emit('update-items', this.responseData);
+    console.log("allLocations:", this.allLocations)
+    // Simulating fetching data or any logic to populate allLocations
+    this.$emit('update-items', this.uvRating);
   },
   components: {
     CollapseTransition,
@@ -108,9 +107,15 @@ export default {
       searchModalVisible: false,
       searchQuery: "",
       searchResults: [],  // to hold the filtered results
-      allItems: [], // this should be your array of items to search from
-      responseData: 11,
-      currentLocation:[]
+      allLocations: [], // this should be your array of items to search from
+      uvRating: 11,
+      currentLocation:{
+        id:617,
+        suburb:"Clayton",
+        lat:-37.940,
+        lon:145.100
+      },
+      weatherData:[]
   };
 },
 
@@ -151,14 +156,14 @@ export default {
       if (!query) {
         this.searchResults = [];
       } else {
-        this.searchResults = this.allItems.filter((item) =>
+        this.searchResults = this.allLocations.filter((item) =>
           item.suburb.toLowerCase().includes(query.toLowerCase())
         );
       }
     },
     // Send the user inputed surbub --> backend use API for the UV Index and return it to responseData
     searchItems(){
-      axios.get('http://localhost:8080/geo/search', { params: { suburb: this.searchQuery } })
+      axios.get(`http://localhost:8080/geo/search?suburb=${this.searchQuery}`)
       .then(response => {
         this.currentLocation = response.data;
         console.log("currentLocation: ",this.currentLocation);
@@ -171,7 +176,7 @@ export default {
     fetchItems() {
       axios.get('http://localhost:8080/geo')
         .then(response => {
-          this.allItems = response.data;
+          this.allLocations = response.data;
           console.log(response.data);
         })
         .catch(error => {
@@ -180,9 +185,13 @@ export default {
     },
 
     fetchWeather() {
-      axios.get('https://api.openweathermap.org/data/2.5/onecall?lat=-35.28&lon=149.12&exclude=current&appid=b6c75eaf141a32191c638baa7ad4d720')
+      const {lat,lon} = this.currentLocation;
+      const apiKey = 'b6c75eaf141a32191c638baa7ad4d720';
+      const url = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=current&appid=${apiKey}`;
+
+      axios.get(url)
         .then(response => {
-          this.allItems = response.data;
+          this.weatherData = response.data;
           console.log("weather: ",response.data);
         })
         .catch(error => {
