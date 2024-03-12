@@ -32,7 +32,7 @@ public class GeoController {
     public Geo searchBySuburb(@RequestParam("suburb") String suburb)
     {
         QueryWrapper<Geo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.like("suburb", suburb);
+        queryWrapper.eq("suburb", suburb);
         return geoMapper.selectOne(queryWrapper);
     }
 

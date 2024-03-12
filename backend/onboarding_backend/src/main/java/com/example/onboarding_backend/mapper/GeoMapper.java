@@ -8,10 +8,4 @@
     import java.util.List;
 
     @Mapper
-    public interface GeoMapper extends BaseMapper<Geo> {
-        //@Select("select * from VIC_lat_lng")
-        //@Select("select * from VIC_lat_lng where id =#{id}")
-        //public Geo findById(int id);
-
-
-    }
+    public interface GeoMapper extends BaseMapper<Geo> { }
