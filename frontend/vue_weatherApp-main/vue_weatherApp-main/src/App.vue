@@ -63,6 +63,7 @@
 <!-- SCRIPTS -->
 <script>
 import axios from 'axios'
+import jsonData from '@/assets/data/locationData.json'
 
 export default {
   name: "App",
@@ -85,7 +86,7 @@ export default {
         icon:""
       },
       iconData: null,
-      locations: {},
+      locations: [],
       filteredSuburbs:[],
       suburbList: [],
       cur_location: {
@@ -175,30 +176,24 @@ export default {
     
     //get location
     fetchAllLocations() {
-      axios.get("http://localhost:8080/geo")
-      .then(res=> {
-        this.locations = res.data;
-        for(let i in this.locations) {
-          this.suburbList.push({value:this.locations[i].suburb})
-        }
-      })
-      .catch(error => {
-        console.error('These was an error', error);
-      })
+      this.locations = jsonData;
+      for(let i in this.locations) {
+        this.suburbList.push({value:this.locations[i].suburb})
+      }
     },
 
     //search location
     searchLocation(suburb) {
-      axios.get(`http://localhost:8080/geo/search?suburb=${suburb}`)
-      .then(res =>{
-        this.cur_location = res.data;
-        console.log(this.cur_location)
-        this.fetchWeather(this.cur_location.lat, this.cur_location.lon);
-        console.log(this.weather)
-      })
-      .catch(error => {
-        console.error('These was an error', error);
-      })
+      for(let i in this.locations) 
+      {
+        if(suburb == this.locations[i].suburb)
+        {
+          this.cur_location = this.locations[i];
+        }
+      }
+      console.log("cur_location:",this.cur_location)
+      this.fetchWeather(this.cur_location.lat, this.cur_location.lon);
+      console.log(this.weather)
     },
    
     querySearch (queryString, cb) {
@@ -258,8 +253,8 @@ export default {
       let year = d.getFullYear();
       return `${day}, ${date} ${month} ${year}`;
     },
-  },
 
+  },
 
 };
 </script>
