@@ -103,13 +103,13 @@ export default {
 
   computed: {
     uvLevelMessage() {
-      if (this.weather.uvi >= 0 && this.weather.uvi <= 2) {
+      if (this.weather.uvi >= 0 && this.weather.uvi < 3) {
         return "Low";
-      } else if (this.weather.uvi >= 3 && this.weather.uvi <= 5) {
+      } else if (this.weather.uvi >= 3 && this.weather.uvi < 6) {
         return "Moderate";
-      } else if (this.weather.uvi >= 6 && this.weather.uvi <= 7) {
+      } else if (this.weather.uvi >= 6 && this.weather.uvi < 8) {
         return "High";
-      } else if (this.weather.uvi >= 8 && this.weather.uvi <= 10) {
+      } else if (this.weather.uvi >= 8 && this.weather.uvi < 11) {
         return "Very High";
       } else if (this.weather.uvi >= 11) {
         return "Extreme";
@@ -118,13 +118,13 @@ export default {
     },
 
     uvLevelColor() {
-    if (this.weather.uvi >= 0 && this.weather.uvi <= 2) {
+    if (this.weather.uvi >= 0 && this.weather.uvi < 3) {
       return 'lightseagreen';
-    } else if (this.weather.uvi >= 3 && this.weather.uvi <= 5) {
+    } else if (this.weather.uvi >= 3 && this.weather.uvi < 6) {
       return 'lightgreen';
-    } else if (this.weather.uvi >= 6 && this.weather.uvi <= 7) {
+    } else if (this.weather.uvi >= 6 && this.weather.uvi < 8) {
       return 'yellow';
-    } else if (this.weather.uvi >= 8 && this.weather.uvi <= 10) {
+    } else if (this.weather.uvi >= 8 && this.weather.uvi < 11) {
       return 'orange';
     } else if (this.weather.uvi >= 11) {
       return 'red';
@@ -136,11 +136,11 @@ export default {
       if(this.weather.uvi == 0) {
         return "You don't need any protection.";
       }
-      else if (this.weather.uvi >= 0 && this.weather.uvi <= 2) {
+      else if (this.weather.uvi >= 0 && this.weather.uvi < 3) {
         return "Wear sunglasses, sunscreen, a hat if you plan on staying out for a prolonged period.";
-      } else if (this.weather.uvi >= 3 && this.weather.uvi <= 5) {
+      } else if (this.weather.uvi >= 3 && this.weather.uvi < 6) {
         return "Wear sunglasses, sunscreen, a hat, and protective clothing if you plan on staying out for a prolonged period.";
-      } else if (this.weather.uvi >= 6 && this.weather.uvi <= 7) {
+      } else if (this.weather.uvi >= 6 && this.weather.uvi < 8) {
         return "Wear sunglasses, sunscreen, a hat, protective clothing, and try to reduce time in the sun if you plan on staying out for a prolonged period.";
       } else if (this.weather.uvi >= 8) {
         return "Try to stay indoors.";
