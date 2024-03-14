@@ -8,15 +8,15 @@
   >
     <main>
       <div class="search-box">
-        <input
+        <el-autocomplete
           type="text"
           class="search-bar"
-          placeholder="Type city name"
+          :fetch-suggestions="querySearch"
+          clearable
+          placeholder="Type subrub name"
           v-model="query"
-          @input="searchLocation"
+          @select="handleSelect"
         />
-
-        
       </div>
 
       <div class="weather-wrap" v-if="weather.name && weather.country">
@@ -29,9 +29,32 @@
 
         <div class="weather-box">
           <div class="temp">{{ Math.round(weather.temp) }}°C</div>
-          <div class="weather">{{ weather.name }}</div>
-          <div class="uvi">UV index: {{ weather.uvi }} </div>
+          <div class="weather">{{ weather.name }} </div>
+          <div class="icon"> <img :src="iconData"> </div>
+          <div class="uvi">UV index: {{ weather.uvi }}</div>
+          <div class="uvi">
+            <p :style="{ color: uvLevelColor }">UV Level: {{ uvLevelMessage }}</p>           
+          </div>
+          <div class="uvi">
+            <div class=uvlevel-msg>
+              <p style="width: 700px; text-align: center;">Recommandation: {{ uvMessage }}</p>
+            </div>
+            
+          </div>
+          <el-button type="primary" style="margin-left: 16px" @click="drawer = true">
+            Sunscreen Calculator
+          </el-button>
+
+          <el-drawer v-model="drawer" title="I am the title" :with-header="false">
+            <h2 style="margin-bottom:10px">Sunscreen Calculator</h2>
+            Height: <input type="number" v-model="height" style="margin-bottom:10px"> cm <br>
+            Weight: <input type="number" v-model="weight" style="margin-bottom:10px"> kg <br>
+            <el-button type="primary" @click="calculateSunscreenAmount">Calculate</el-button>
+            <div style="margin-top:10px ;" v-if="sunscreenAmount !== null">Sunscreen Amount: {{ Math.round(sunscreenAmount) }} ml</div>
+            
+          </el-drawer>
         </div>
+        
       </div>
     </main>
   </div>
@@ -45,11 +68,12 @@ export default {
   name: "App",
   mounted() {
     this.fetchAllLocations();
-    this.fetchWeather();
+    this.fetchWeather(this.cur_location.lat, this.cur_location.lon);
   },
   data() {
     //fetching API from openweathermap.org
     return {
+      drawer:false,
       api_key: "b6c75eaf141a32191c638baa7ad4d720",
       url_base: "https://api.openweathermap.org/data/3.0/",
       query: "",
@@ -57,33 +81,92 @@ export default {
         name:"",
         country:"",
         uvi: 0,
-        temp:0
+        temp:0,
+        icon:""
       },
+      iconData: null,
       locations: {},
+      filteredSuburbs:[],
+      suburbList: [],
       cur_location: {
         id: 617,
         suburb:'Clayton',
         lat:-38.000,
         lon:143.000
       },
+      height: null,
+      weight: null,
+      sunscreenAmount: null,
     };
   },
+
+  computed: {
+    uvLevelMessage() {
+      if (this.weather.uvi >= 0 && this.weather.uvi <= 2) {
+        return "Low";
+      } else if (this.weather.uvi >= 3 && this.weather.uvi <= 5) {
+        return "Moderate";
+      } else if (this.weather.uvi >= 6 && this.weather.uvi <= 7) {
+        return "High";
+      } else if (this.weather.uvi >= 8 && this.weather.uvi <= 10) {
+        return "Very High";
+      } else if (this.weather.uvi >= 11) {
+        return "Extreme";
+      }
+      return "Invalid UV Rating"; // Default message
+    },
+
+    uvLevelColor() {
+    if (this.weather.uvi >= 0 && this.weather.uvi <= 2) {
+      return 'lightseagreen';
+    } else if (this.weather.uvi >= 3 && this.weather.uvi <= 5) {
+      return 'lightgreen';
+    } else if (this.weather.uvi >= 6 && this.weather.uvi <= 7) {
+      return 'yellow';
+    } else if (this.weather.uvi >= 8 && this.weather.uvi <= 10) {
+      return 'orange';
+    } else if (this.weather.uvi >= 11) {
+      return 'red';
+    }
+    return 'black'; // Default color
+    },
+
+    uvMessage() {
+      if(this.weather.uvi == 0) {
+        return "You don't need any protection.";
+      }
+      else if (this.weather.uvi >= 0 && this.weather.uvi <= 2) {
+        return "Wear sunglasses, sunscreen, a hat if you plan on staying out for a prolonged period.";
+      } else if (this.weather.uvi >= 3 && this.weather.uvi <= 5) {
+        return "Wear sunglasses, sunscreen, a hat, and protective clothing if you plan on staying out for a prolonged period.";
+      } else if (this.weather.uvi >= 6 && this.weather.uvi <= 7) {
+        return "Wear sunglasses, sunscreen, a hat, protective clothing, and try to reduce time in the sun if you plan on staying out for a prolonged period.";
+      } else if (this.weather.uvi >= 8) {
+        return "Try to stay indoors.";
+      }
+      return "Check UV rating."; // Default message if UV rating is out of expected range
+    },
+
+  },
+
   methods: {
     //get weather data
-    fetchWeather() {
-      axios.get(`${this.url_base}onecall?lat=${this.cur_location.lat}&lon=${this.cur_location.lon}&appid=${this.api_key}`)
+    fetchWeather(lat, lon) {
+      axios.get(`${this.url_base}onecall?lat=${lat}&lon=${lon}&appid=${this.api_key}`)
       .then(res=> {
         let name = res.data.current.weather[0].main;
         let country = res.data.timezone;
         let uvi = res.data.current.uvi;
         let temp = res.data.current.temp
+        let icon = res.data.current.weather[0].icon
         this.weather = {
           name:name,
           country:country,
           uvi:uvi,
-          temp:temp - 273.15
+          temp:temp - 273.15,
+          icon:icon
         }
-        console.log("weather",this.weather)
+        this.iconData = `https://openweathermap.org/img/wn/${this.weather.icon}@2x.png`
       })
       .catch(error => {
         console.error('These was an error', error);
@@ -95,29 +178,53 @@ export default {
       axios.get("http://localhost:8080/geo")
       .then(res=> {
         this.locations = res.data;
-        console.log("地址数据：", this.locations);
+        for(let i in this.locations) {
+          this.suburbList.push({value:this.locations[i].suburb})
+        }
       })
       .catch(error => {
         console.error('These was an error', error);
       })
-    },
-
-    selectLocation(location) {
-      this.cur_location = location;
-      this.query = '';
-      this.fetchWeather();
     },
 
     //search location
-    searchLocation() {
-      axios.get(`http://localhost:8080/geo/search?suburb=${this.query}`)
+    searchLocation(suburb) {
+      axios.get(`http://localhost:8080/geo/search?suburb=${suburb}`)
       .then(res =>{
         this.cur_location = res.data;
+        console.log(this.cur_location)
+        this.fetchWeather(this.cur_location.lat, this.cur_location.lon);
+        console.log(this.weather)
       })
       .catch(error => {
         console.error('These was an error', error);
       })
     },
+   
+    querySearch (queryString, cb) {
+      const suburbs = this.suburbList;
+      const result = queryString
+      ? suburbs?.filter(
+        (suburb)=> {
+          return (suburb.value.toLowerCase().indexOf(queryString.toLowerCase()) == 0)
+        }
+      )
+      : suburbs
+      cb(result)
+    },
+    
+    handleSelect(item) {
+      this.searchLocation(item.value);
+    },
+
+    calculateSunscreenAmount() {
+      if (!this.height || !this.weight) {
+        alert('Please enter both height and weight.');
+        return;
+      }
+      this.sunscreenAmount = (0.007184 * Math.pow(this.height, 0.725) * Math.pow(this.weight, 0.425)) * 30;
+    },
+
 
     //creating dates for the weather
     dateBuilder() {
@@ -262,5 +369,22 @@ main {
   color: #fff;
   font-size: 40px;
   font-weight: 500;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.dashboard .el-progress--circle {
+  margin-right: 15px;
+}
+
+.weather-box .uvi .uvlevel-msg {
+  display: flex; 
+  justify-content: center;
+}
+
+.weather-box .uvi .uvlevel-msg p{
+  width: 700px; 
+  text-align: center; 
+  font-size: 20px;
 }
 </style>
