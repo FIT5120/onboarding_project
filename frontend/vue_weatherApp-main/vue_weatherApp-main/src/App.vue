@@ -47,10 +47,16 @@
 
           <el-drawer v-model="drawer" title="I am the title" :with-header="false">
             <h2 style="margin-bottom:10px">Sunscreen Calculator</h2>
-            Height: <input type="number" v-model="height" style="margin-bottom:10px"> cm <br>
-            Weight: <input type="number" v-model="weight" style="margin-bottom:10px"> kg <br>
+            <div style="margin-bottom: 20px;">
+              <img style="max-width: 90%; height: auto;" src="./assets/sunscreen.jpg">  
+            </div>
+
+            Height: <input type="number" v-model="height" style="margin-bottom:10px; font-size: large;"> cm <br>
+            Weight: <input type="number" v-model="weight" style="margin-bottom:10px; font-size: large;"> kg <br>
             <el-button type="primary" @click="calculateSunscreenAmount">Calculate</el-button>
-            <div style="margin-top:10px ;" v-if="sunscreenAmount !== null">Sunscreen Amount: {{ Math.round(sunscreenAmount) }} ml</div>
+            <div style="margin-top:10px ;" v-if="sunscreenAmount !== null">
+              Sunscreen Amount: {{ Math.round(sunscreenAmount) }} ml
+            </div>
             
           </el-drawer>
         </div>
@@ -366,10 +372,6 @@ main {
   font-weight: 500;
   margin-top: 20px;
   margin-bottom: 20px;
-}
-
-.dashboard .el-progress--circle {
-  margin-right: 15px;
 }
 
 .weather-box .uvi .uvlevel-msg {
