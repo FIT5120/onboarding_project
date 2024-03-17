@@ -81,7 +81,7 @@ export default {
     //fetching API from openweathermap.org
     return {
       drawer:false,
-      api_key: "b6c75eaf141a32191c638baa7ad4d720",
+      api_key: "15cc9b4fa29b5c23c78cbde85c4ec55c",
       url_base: "https://api.openweathermap.org/data/3.0/",
       query: "",
       weather: {
